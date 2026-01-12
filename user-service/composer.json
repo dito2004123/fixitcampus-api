@@ -1,0 +1,13 @@
+{
+    "name": "fixitcampus/user-service",
+    "description": "User service for FixitCampus ticketing system.",
+    "require": {
+        "php": ">=8.0",
+        "firebase/php-jwt": "^6.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

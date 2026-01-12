@@ -1,0 +1,11 @@
+# Mengaktifkan Rewrite Engine
+RewriteEngine On
+
+# Aturan untuk memastikan header Authorization diteruskan ke PHP
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# Aturan tambahan untuk routing (jika path tidak menunjuk ke file/direktori nyata)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

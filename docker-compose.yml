@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  #--- User Service (PHP + MySQL) ---#
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:80"
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=fixitcampus_users
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+      - JWT_SECRET_KEY=ganti-dengan-kunci-rahasia-anda-yang-panjang-dan-aman
+    depends_on:
+      - mysql
+    networks:
+      - fixitcampus-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=fixitcampus_users
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - fixitcampus-net
+
+  #--- Ticket Service (Go + PostgreSQL) ---#
+  ticket-service:
+    build: ./ticket-service
+    container_name: ticket-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+      - DB_DATABASE=fixitcampus_tickets
+      - JWT_SECRET_KEY=ganti-dengan-kunci-rahasia-anda-yang-panjang-dan-aman
+    depends_on:
+      - postgres
+    networks:
+      - fixitcampus-net
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=fixitcampus_tickets
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - fixitcampus-net
+
+  #--- Notification Service (Node.js + MongoDB) ---#
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_HOST=mongodb
+      - DB_PORT=27017
+      - DB_DATABASE=fixitcampus_notifications
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+    depends_on:
+      - mongodb
+    networks:
+      - fixitcampus-net
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=fixitcampus_notifications
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - fixitcampus-net
+      
+  #--- Reporting Service (Python + Redis) ---#
+  reporting-service:
+    build: ./reporting-service
+    container_name: reporting-service
+    ports:
+      - "8084:5000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - fixitcampus-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-db
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - fixitcampus-net
+
+volumes:
+  mysql-data:
+  postgres-data:
+  mongo-data:
+  redis-data:
+
+networks:
+  fixitcampus-net:
+    driver: bridge
